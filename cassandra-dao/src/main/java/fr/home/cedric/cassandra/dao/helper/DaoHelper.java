@@ -23,7 +23,6 @@ import me.prettyprint.hector.api.beans.HColumn;
 import me.prettyprint.hector.api.beans.OrderedRows;
 import me.prettyprint.hector.api.factory.HFactory;
 import me.prettyprint.hector.api.mutation.Mutator;
-import me.prettyprint.hector.api.query.MultigetSliceQuery;
 import me.prettyprint.hector.api.query.QueryResult;
 import me.prettyprint.hector.api.query.RangeSlicesQuery;
 import me.prettyprint.hector.api.query.SliceQuery;
@@ -34,6 +33,31 @@ import me.prettyprint.hector.api.query.SliceQuery;
  * @author cedric
  */
 public class DaoHelper {
+
+	/**
+	 * Constantes pour le message d'erreur d'acces.
+	 */
+	private static final String ERREUR_ACCES = "Erreur d'accès : {}";
+	
+	/**
+	 * Constantes pour le message d'erreur pour une methode non trouve.
+	 */
+	private static final String ERREUR_METHODE = "Erreur sur la méthode : {}";
+	
+	/**
+	 * Constantes pour le message d'erreur de securite.
+	 */
+	private static final String ERREUR_SECURITE = "Erreur de sécurité : {}";
+	
+	/**
+	 * Constantes pour le message d'erreur d'arguments passes a une methode.
+	 */
+	private static final String ERREUR_ARGUMENTS = "Erreur d'arguments : {}";
+	
+	/**
+	 * Constantes pour le message d'erreur de target.
+	 */
+	private static final String ERREUR_TARGET = "Erreur de target : {}";
 
 	/**
 	 * Logger.
@@ -76,7 +100,7 @@ public class DaoHelper {
 	 */
 	private String[] getColumnNames(final Class<?> classe) {
 		final List<String> colums = new ArrayList<String>();
-		for (Field attribut : classe.getDeclaredFields()) {
+		for (final Field attribut : classe.getDeclaredFields()) {
 			if (attribut.isAnnotationPresent(ColumnName.class)) {
 				// si l'annotation est presente, on prend le nom specifié
 				colums.add(attribut.getAnnotation(ColumnName.class).value());
@@ -105,7 +129,7 @@ public class DaoHelper {
 	private <T extends Object> T mapperObject(final Class<T> classe,
 			final String identifiant, 
 			final ColumnSlice<String, String> colonnes) {
-		T objet = null; // NOPMD
+		T objet = null; 
 		try {
 			objet = classe.newInstance();
 			
@@ -113,13 +137,13 @@ public class DaoHelper {
 			setKeyValue(objet, identifiant);
 			
 			// mise a jour des colonnes
-			for (HColumn<String, String> colonne : colonnes.getColumns()) {
+			for (final HColumn<String, String> colonne : colonnes.getColumns()) {
 				setValue(objet, colonne);
 			}
 		} catch (InstantiationException e) {
 			LOGGER.error("Erreur d'instantiation : {}", e.getMessage());
 		} catch (IllegalAccessException e) {
-			LOGGER.error("Erreur d'accès : {}", e.getMessage());
+			LOGGER.error(ERREUR_ACCES, e.getMessage());
 		}
 		return objet;
 	}
@@ -133,21 +157,21 @@ public class DaoHelper {
 			final String identifiant) {
 		final Field key = trouverKey(objet);
 		try {
-			final Method method = objet.getClass() // NOPMD
+			final Method method = objet.getClass() 
 				.getMethod("set" 
 					+ StringUtils.capitalize(key.getName()),
 					key.getType());
 			method.invoke(objet, identifiant);
 		} catch (NoSuchMethodException e) {
-			LOGGER.error("Erreur sur la méthode : {}", e.getMessage());
+			LOGGER.error(ERREUR_METHODE, e.getMessage());
 		} catch (SecurityException e) {
-			LOGGER.error("Erreur de sécurité : {}", e.getMessage());
+			LOGGER.error(ERREUR_SECURITE, e.getMessage());
 		} catch (IllegalAccessException e) {
-			LOGGER.error("Erreur d'accès : {}", e.getMessage());
+			LOGGER.error(ERREUR_ACCES, e.getMessage());
 		} catch (IllegalArgumentException e) {
-			LOGGER.error("Erreur d'arguments : {}", e.getMessage());
+			LOGGER.error(ERREUR_ARGUMENTS, e.getMessage());
 		} catch (InvocationTargetException e) {
-			LOGGER.error("Erreur de target : {}", e.getMessage());
+			LOGGER.error(ERREUR_TARGET, e.getMessage());
 		}
 	}
 	
@@ -157,24 +181,24 @@ public class DaoHelper {
 	 * @return String
 	 */
 	private String getKeyValue(final Object objet) {
-		String retour = null; // NOPMD
+		String retour = null; 
 		final Field key = trouverKey(objet);
 		try {
-			final Method method = objet.getClass() // NOPMD
+			final Method method = objet.getClass() 
 				.getMethod("get" 
 					+ StringUtils.capitalize(key.getName()),
 					new Class[] {});
-			retour = (String) method.invoke(objet, null); // NOPMD
+			retour = (String) method.invoke(objet, null); 
 		} catch (NoSuchMethodException e) {
-			LOGGER.error("Erreur sur la méthode : {}", e.getMessage());
+			LOGGER.error(ERREUR_METHODE, e.getMessage());
 		} catch (SecurityException e) {
-			LOGGER.error("Erreur de sécurité : {}", e.getMessage());
+			LOGGER.error(ERREUR_SECURITE, e.getMessage());
 		} catch (IllegalAccessException e) {
-			LOGGER.error("Erreur d'accès : {}", e.getMessage());
+			LOGGER.error(ERREUR_ACCES, e.getMessage());
 		} catch (IllegalArgumentException e) {
-			LOGGER.error("Erreur d'arguments : {}", e.getMessage());
+			LOGGER.error(ERREUR_ARGUMENTS, e.getMessage());
 		} catch (InvocationTargetException e) {
-			LOGGER.error("Erreur de target : {}", e.getMessage());
+			LOGGER.error(ERREUR_TARGET, e.getMessage());
 		}
 		return retour;
 	}
@@ -188,7 +212,7 @@ public class DaoHelper {
 			final HColumn<String, String> colonne) {
 		final Field attribut = trouverAttribut(objet, colonne.getName());
 		try {
-			final Method method = objet.getClass() // NOPMD
+			final Method method = objet.getClass() 
 					.getMethod("set" 
 						+ StringUtils.capitalize(attribut.getName()),
 					attribut.getType());
@@ -200,15 +224,15 @@ public class DaoHelper {
 				LOGGER.warn("type non géré : {}", attribut.getType());
 			}
 		} catch (NoSuchMethodException e) {
-			LOGGER.error("Erreur sur la méthode : {}", e.getMessage());
+			LOGGER.error(ERREUR_METHODE, e.getMessage());
 		} catch (SecurityException e) {
-			LOGGER.error("Erreur de sécurité : {}", e.getMessage());
+			LOGGER.error(ERREUR_SECURITE, e.getMessage());
 		} catch (IllegalAccessException e) {
-			LOGGER.error("Erreur d'accès : {}", e.getMessage());
+			LOGGER.error(ERREUR_ACCES, e.getMessage());
 		} catch (IllegalArgumentException e) {
-			LOGGER.error("Erreur d'arguments : {}", e.getMessage());
+			LOGGER.error(ERREUR_ARGUMENTS, e.getMessage());
 		} catch (InvocationTargetException e) {
-			LOGGER.error("Erreur de target : {}", e.getMessage());
+			LOGGER.error(ERREUR_TARGET, e.getMessage());
 		}
 	}
 	
@@ -220,32 +244,32 @@ public class DaoHelper {
 	 */
 	private String getValue(final Object objet,
 			final String colonneName) {
-		String retour = null; // NOPMD
+		String retour = null; 
 		final Field attribut = trouverAttribut(objet, colonneName);
 		try {
-			final Method method = objet.getClass() // NOPMD
+			final Method method = objet.getClass() 
 					.getMethod("get" 
 						+ StringUtils.capitalize(attribut.getName()),
 						new Class[] {});
 			if (attribut.getType().isAssignableFrom(String.class)) {
-				retour = (String) method.invoke(objet, null); // NOPMD
+				retour = (String) method.invoke(objet, null); 
 			} else if (attribut.getType().isAssignableFrom(Integer.class)) {
-				retour = Integer.toString((Integer) method // NOPMD
+				retour = Integer.toString((Integer) method 
 						.invoke(objet, 
 						null));
 			} else {
 				LOGGER.warn("type non géré : {}", attribut.getType());
 			}
 		} catch (NoSuchMethodException e) {
-			LOGGER.error("Erreur sur la méthode : {}", e.getMessage());
+			LOGGER.error(ERREUR_METHODE, e.getMessage());
 		} catch (SecurityException e) {
-			LOGGER.error("Erreur de sécurité : {}", e.getMessage());
+			LOGGER.error(ERREUR_SECURITE, e.getMessage());
 		} catch (IllegalAccessException e) {
-			LOGGER.error("Erreur d'accès : {}", e.getMessage());
+			LOGGER.error(ERREUR_ACCES, e.getMessage());
 		} catch (IllegalArgumentException e) {
-			LOGGER.error("Erreur d'arguments : {}", e.getMessage());
+			LOGGER.error(ERREUR_ARGUMENTS, e.getMessage());
 		} catch (InvocationTargetException e) {
-			LOGGER.error("Erreur de target : {}", e.getMessage());
+			LOGGER.error(ERREUR_TARGET, e.getMessage());
 		}
 		return retour;
 	}
@@ -261,8 +285,8 @@ public class DaoHelper {
 	 */
 	private Field trouverAttribut(final Object objet,
 			final String attributName) {
-		Field retour = null; // NOPMD
-		for (Field attribut : objet.getClass().getDeclaredFields()) {
+		Field retour = null; 
+		for (final Field attribut : objet.getClass().getDeclaredFields()) {
 			if (attribut.getName().equals(attributName)
 					|| (attribut.isAnnotationPresent(ColumnName.class) 
 							&& attribut.getAnnotation(ColumnName.class)
@@ -282,8 +306,8 @@ public class DaoHelper {
 	 * @return Field
 	 */
 	private Field trouverKey(final Object objet) {
-		Field retour = null; // NOPMD
-		for (Field attribut : objet.getClass().getDeclaredFields()) {
+		Field retour = null; 
+		for (final Field attribut : objet.getClass().getDeclaredFields()) {
 			if (attribut.isAnnotationPresent(Key.class)) {
 				retour = attribut;
 				break;
@@ -305,7 +329,7 @@ public class DaoHelper {
 	public final <T extends Object> T findById(final Class<T> classe, 
 			final String identifiant) {
 
-		T retour = null; // NOPMD
+		T retour = null; 
 
 		// construit la requête
 		final SliceQuery<String, String, String> query = HFactory
@@ -373,15 +397,15 @@ public class DaoHelper {
 				StringSerializer.get());
 
 		// recupere la cle
-		final String identifiant = getKeyValue(type); // NOPMD
+		final String identifiant = getKeyValue(type); 
 		
 		// recupere la column family
-		final String columnFamily = getColumnFamily(type.getClass()); // NOPMD
+		final String columnFamily = getColumnFamily(type.getClass()); 
 		
 		// recupere la liste des colonnes
 		final String[] columnNames = getColumnNames(type.getClass());
 		
-		for (String colonne : columnNames) {
+		for (final String colonne : columnNames) {
 			mutator.addInsertion(identifiant, columnFamily, 
 					HFactory.createStringColumn(colonne, 
 							getValue(type, colonne)));
@@ -402,10 +426,10 @@ public class DaoHelper {
 				StringSerializer.get());
 
 		// recupere la cle
-		final String identifiant = getKeyValue(type); // NOPMD
+		final String identifiant = getKeyValue(type); 
 		
 		// recupere la column family
-		final String columnFamily = getColumnFamily(type.getClass()); // NOPMD
+		final String columnFamily = getColumnFamily(type.getClass()); 
 		
 		// execute la suppression
 		mutator.delete(identifiant, columnFamily, null, StringSerializer.get());
