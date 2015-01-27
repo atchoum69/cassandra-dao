@@ -58,6 +58,11 @@ public class DaoHelper {
 	 * Constantes pour le message d'erreur de target.
 	 */
 	private static final String ERREUR_TARGET = "Erreur de target : {}";
+	
+	/**
+	 * Nombre de résultat max par requête.
+	 */
+	private static final int MAX_RESULT = 100000;
 
 	/**
 	 * Logger.
@@ -386,6 +391,7 @@ public class DaoHelper {
 						StringSerializer.get(), StringSerializer.get());
 		query.setColumnFamily(getColumnFamily(classe)).setKeys(null, null)
 				.setColumnNames(getColumnNames(classe));
+		query.setRowCount(MAX_RESULT);
 
 		// exécute la requête
 		final QueryResult<OrderedRows<String, String, String>> result = query
@@ -463,6 +469,7 @@ public class DaoHelper {
 		final String columnFamily = getColumnFamily(type.getClass());
 
 		// execute la suppression
-		mutator.delete(identifiant, columnFamily, null, StringSerializer.get());
+		mutator.addDeletion(identifiant, columnFamily, null, StringSerializer.get());
+		mutator.execute();
 	}
 }
